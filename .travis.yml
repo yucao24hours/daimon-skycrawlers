@@ -7,6 +7,10 @@ rvm:
 
 before_install: gem install bundler -v 1.11.2
 
+script:
+  - bundle exec rake
+  - bundle exec cucumber --format pretty
+
 after_failure:
   - cat /tmp/processor.log
   - cat /tmp/crawler_out.log
