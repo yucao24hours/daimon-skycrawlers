@@ -14,6 +14,8 @@ script:
 after_failure:
   - cat /tmp/processor.log
   - cat /tmp/crawler_out.log
+  - ps aux | grep rabbitmq
+  - sudo rabbitmqctl list_queues
 
 services:
   - rabbitmq
