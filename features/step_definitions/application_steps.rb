@@ -43,8 +43,8 @@ Then(/^processor receives the following message:$/) do |message|
   end
 end
 
-After do |scenario|
-  @worker_pids.each do |pid|
-    Process.kill "INT", pid
-  end
-end
+# After do |scenario|
+#   @worker_pids.each do |pid|
+#     Process.kill "INT", pid
+#   end
+# end
