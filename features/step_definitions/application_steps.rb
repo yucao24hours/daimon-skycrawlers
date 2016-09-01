@@ -32,6 +32,9 @@ Then(/^processor receives the following message:$/) do |message|
         raise Timeout::Error if Regexp.compile(Regexp.escape(message)) =~ data
         sleep 0.2
       end
+      puts File.read(@processor_out_path)
+      puts "---"
+      puts File.read(@crawler_out_path)
     end
   rescue Timeout::Error
     # noop
