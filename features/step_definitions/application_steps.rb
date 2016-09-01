@@ -25,7 +25,7 @@ Then(/^processor receives the following message:$/) do |message|
   data = nil
 
   begin
-    Timeout.timeout(5) do
+    Timeout.timeout(15) do
       # XXX dirty way...
       while true
         data = File.read(@processor_out_path)
