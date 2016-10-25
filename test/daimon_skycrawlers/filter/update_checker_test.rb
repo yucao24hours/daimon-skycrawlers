@@ -14,7 +14,7 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
   def create_target(headers = {}, status_code: 200)
     connection = Faraday.new(url: @base_url) do |builder|
       builder.adapter :test, Faraday::Adapter::Test::Stubs.new do |stub|
-        stub.head(@path){|env| [status_code, headers, "" ] }
+        stub.head(@path){|env| [status_code, headers, ""] }
       end
     end
 
