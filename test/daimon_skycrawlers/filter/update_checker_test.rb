@@ -6,25 +6,28 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
   setup do
     @storage = DaimonSkycrawlers::Storage::RDB.new(fixture_path("database.yml"))
     load(fixture_path("schema.rb"))
-    mock(@filter).storage { @storage }
     @base_url = "http://example.com"
     @path = "/blog/2016/1.html"
     @url = @base_url + @path
 
   end
 
-  def connection(response)
-    Faraday.new(url: @base_url) do |builder|
+  def create_target(response = [200, {}, ''])
+    connection = Faraday.new(url: @base_url) do |builder|
       builder.adapter :test, Faraday::Adapter::Test::Stubs.new do |stub|
-        stubs.head(@path){|env| response }
+        stub.head(@path){|env| response }
       end
     end
+
+    filter = DaimonSkycrawlers::Filter::UpdateChecker.new(connection: connection)
+    mock(filter).storage { @storage }
+
+    filter
   end
 
   test "url does not exist in storage" do
     mock(@storage).find(@url) { nil }
-    response = [200, {}, '']
-    filter = DaimonSkycrawlers::Filter::UpdateChecker.new(connection: connection(response))
+    filter = create_target
     assert_true(filter.call(@path))
   end
 
@@ -33,7 +36,7 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
       mock(@storage).find(@url) { DaimonSkycrawlers::Storage::RDB::Page.new(url: @url) }
 
       response = [200, { "last-modified" => "Sun, 31 Aug 2008 12:34:56 GMT" }, '']
-      filter = DaimonSkycrawlers::Filter::UpdateChecker.new(connection: connection(response))
+      filter = create_target(response)
 
       assert_true(filter.call(@path))
     end
@@ -45,7 +48,7 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
 #      stubs = Faraday::Adapter::Test::Stubs.new
 #      test = Faraday.new do |builder|
 #        builder.adapter :test, stubs do |stub|
-#          stubs.head(@url){|env| [200, { "last-modified" => now }, ''] }
+#          stub.head(@url){|env| [200, { "last-modified" => now }, ''] }
 #        end
 #      end
 #      mock(Faraday).head(@url) { test.head(@url) }
@@ -60,7 +63,7 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
 #      stubs = Faraday::Adapter::Test::Stubs.new
 #      test = Faraday.new do |builder|
 #        builder.adapter :test, stubs do |stub|
-#          stubs.head(@url){|env| [200, { "last-modified" => Time.at(now - 2) }, ''] }
+#          stub.head(@url){|env| [200, { "last-modified" => Time.at(now - 2) }, ''] }
 #        end
 #      end
 #      mock(Faraday).head(@url) { test.head(@url) }
@@ -74,7 +77,7 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
 #      stubs = Faraday::Adapter::Test::Stubs.new
 #      test = Faraday.new do |builder|
 #        builder.adapter :test, stubs do |stub|
-#          stubs.head(@url){|env| [200, { "etag" => "xxxxx" }, ''] }
+#          stub.head(@url){|env| [200, { "etag" => "xxxxx" }, ''] }
 #        end
 #      end
 #      mock(Faraday).head(@url) { test.head(@url) }
@@ -89,7 +92,7 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
 #      stubs = Faraday::Adapter::Test::Stubs.new
 #      test = Faraday.new do |builder|
 #        builder.adapter :test, stubs do |stub|
-#          stubs.head(@url){|env| [200, { "etag" => "yyyyy", "last-modified" => Time.at(now + 1) }, ''] }
+#          stub.head(@url){|env| [200, { "etag" => "yyyyy", "last-modified" => Time.at(now + 1) }, ''] }
 #        end
 #      end
 #      mock(Faraday).head(@url) { test.head(@url) }
@@ -103,7 +106,7 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
 #      stubs = Faraday::Adapter::Test::Stubs.new
 #      test = Faraday.new do |builder|
 #        builder.adapter :test, stubs do |stub|
-#          stubs.head(@url){|env| [200, {}, ''] }
+#          stub.head(@url){|env| [200, {}, ''] }
 #        end
 #      end
 #      mock(Faraday).head(@url) { test.head(@url) }

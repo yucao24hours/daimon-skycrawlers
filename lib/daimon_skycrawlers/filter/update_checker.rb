@@ -39,7 +39,7 @@ module DaimonSkycrawlers
       private
 
       def absolute_url(url)
-        @connection.build_url(url)
+        @connection.build_url(url).to_s
       end
     end
   end
