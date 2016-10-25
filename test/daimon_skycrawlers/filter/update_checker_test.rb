@@ -24,13 +24,13 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
   test "url does not exist in storage" do
     mock(@storage).find(@url) { nil }
     filter = create_target("last-modified" => "Sun, 31 Aug 2008 12:34:56 GMT")
+
     assert_true(filter.call(@path))
   end
 
   sub_test_case "url exist in storage" do
     test "need update when no etag and no last-modified" do
       mock(@storage).find(@url) { DaimonSkycrawlers::Storage::RDB::Page.new(url: @url) }
-
       filter = create_target("last-modified" => "Sun, 31 Aug 2008 12:34:56 GMT")
 
       assert_true(filter.call(@path))
@@ -39,7 +39,6 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
     test "need update when last-modified is newer than page.last_modified_at" do
       last_modified = "Sun, 31 Aug 2008 12:34:56 GMT"
       mock(@storage).find(@url) { DaimonSkycrawlers::Storage::RDB::Page.new(url: @url, last_modified_at: Time.at(DateTime.httpdate(last_modified) - 1)) }
-
       filter = create_target("last-modified" => last_modified)
 
       assert_true(filter.call(@path))
@@ -49,7 +48,6 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
     test "need update when last-modified is older than page.last_modified_at" do
       last_modified = "Sun, 31 Aug 2008 12:34:56 GMT"
       mock(@storage).find(@url) { DaimonSkycrawlers::Storage::RDB::Page.new(url: @url, last_modified_at: Time.at(DateTime.httpdate(last_modified) + 1)) }
-
       filter = create_target("last-modified" => last_modified)
 
       assert_true(filter.call(@path))
@@ -58,7 +56,6 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
     test "etag matches" do
       last_modified = "Sun, 31 Aug 2008 12:34:56 GMT"
       mock(@storage).find(@url) { DaimonSkycrawlers::Storage::RDB::Page.new(url: @url, etag: "xxxxx") }
-
       filter = create_target("last-modified" => last_modified, "etag" => "xxxxx")
 
       assert_false(filter.call(@path))
@@ -67,7 +64,6 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
     test "need update when etag does not match" do
       last_modified = "Sun, 31 Aug 2008 12:34:56 GMT"
       mock(@storage).find(@url) { DaimonSkycrawlers::Storage::RDB::Page.new(url: @url, etag: "xxxxx") }
-
       filter = create_target("last-modified" => last_modified, "etag" => "yyyyy")
 
       assert_true(filter.call(@path))
@@ -75,7 +71,6 @@ class DaimonSkycrawlersUpdateCheckerTest < Test::Unit::TestCase
 
     test "need update with relative path w/o headers" do
       mock(@storage).find(@url) { DaimonSkycrawlers::Storage::RDB::Page.new(url: @url) }
-
       filter = create_target
 
       assert_true(filter.call(@path))
