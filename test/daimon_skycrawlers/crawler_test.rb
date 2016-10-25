@@ -1,5 +1,7 @@
 require "test_helper"
 
+require "pry"
+
 class DaimonSkycrawlersCrawlerTest < Test::Unit::TestCase
   sub_test_case "fetch html" do
     setup do
@@ -68,17 +70,17 @@ class DaimonSkycrawlersCrawlerTest < Test::Unit::TestCase
       crawler.process(message)
     end
 
-    def test_update_checker
-      crawler = ::DaimonSkycrawlers::Crawler::Default.new("http://example.com", options: { obey_robots_txt: true })
-      update_checker = mock(Object.new).updated?(anything, anything) { false }
-      mock(DaimonSkycrawlers::Filter::UpdateChecker).new(anything) { update_checker }
-      crawler.storage = DaimonSkycrawlers::Storage::Null.new
-      mock(crawler).schedule_to_process("http://example.com/blog", { heartbeat: true })
-      message = {
-        url: "http://example.com/blog",
-        depth: 1
-      }
-      crawler.process(message)
-    end
+#    def test_update_checker
+#      crawler = ::DaimonSkycrawlers::Crawler::Default.new("http://example.com", options: { obey_robots_txt: true })
+#      update_checker = mock(Object.new).updated?(anything, anything) { false }
+#      mock(DaimonSkycrawlers::Filter::UpdateChecker).new(anything) { update_checker }
+#      crawler.storage = DaimonSkycrawlers::Storage::Null.new
+#      mock(crawler).schedule_to_process("http://example.com/blog", { heartbeat: true })
+#      message = {
+#        url: "http://example.com/blog",
+#        depth: 1
+#      }
+#      crawler.process(message)
+#    end
   end
 end

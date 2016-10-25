@@ -10,10 +10,9 @@ module DaimonSkycrawlers
     # access).
     #
     class UpdateChecker < Base
-      def initialize(storage: nil, base_url: nil)
+      def initialize(connection: connection, storage: nil, base_url: nil)
         super(storage: storage)
-        @base_url = nil
-        @base_url = URI(base_url) if base_url
+        @connection = connection
       end
 
       #
@@ -21,18 +20,10 @@ module DaimonSkycrawlers
       # @param connection [Faraday]
       # @return [true|false] Return true when need update, otherwise return false
       #
-      def call(url, connection: nil)
-        unless URI(url).absolute?
-          url = (@base_url + url).to_s
-        end
-        page = storage.find(url)
+      def call(path, connection: nil)
+        page = storage.find(absolute_url(path))
         return true unless page
-        if connection
-          response = connection.head(url)
-        else
-          response = Faraday.head(url)
-        end
-        headers = response.headers
+        headers = @connection.head(path).headers
         case
         when headers.key?("etag") && page.etag
           headers["etag"] != page.etag
@@ -44,6 +35,12 @@ module DaimonSkycrawlers
       end
 
       alias updated? call
+
+      private
+
+      def absolute_url(url)
+        @connection.build_url(url)
+      end
     end
   end
 end

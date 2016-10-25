@@ -117,7 +117,7 @@ module DaimonSkycrawlers
             return
           end
         end
-        update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(storage: storage)
+        update_checker = DaimonSkycrawlers::Filter::UpdateChecker.new(connection: connection, storage: storage)
         unless update_checker.updated?(url.to_s, connection: connection)
           skip(url)
           return
