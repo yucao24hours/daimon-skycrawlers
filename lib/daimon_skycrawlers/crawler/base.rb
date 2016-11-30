@@ -80,18 +80,25 @@ module DaimonSkycrawlers
       end
 
       def process(message, &block)
-        url = message.delete(:url)
+        queued_url_or_path = message.delete(:url)
 
         @skipped = false
         @n_processed_urls += 1
-        # url can be a path
-        url = (URI(connection.url_prefix) + url).to_s
+        # TODO refine comment below
+        # If the queued uri is a path (like `/foo`), it requires to restyle to absolute url.
+        uri = URI(queued_url_or_path)
+        target_uri = if uri.absolute?
+                       uri
+                     else
+                       # TODO need uri.to_s?
+                       URI::HTTP.build(host: connection.url_prefix.host, path: uri)
+                     end
 
-        apply_default_filters(url)
+        apply_default_filters(target_uri)
 
         unless skipped?
           @prepare.call(connection)
-          fetch(url, message, &block)
+          fetch(target_uri, message, &block)
         end
       end
 
